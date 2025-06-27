@@ -1,23 +1,30 @@
 const { Telegraf } = require('telegraf');
 
-// Token dari bot Telegram kamu
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// Contoh command
-bot.command('start', (ctx) => ctx.reply('Halo dari Netlify!'));
+bot.command('start', (ctx) => {
+  ctx.reply('✅ Halo dari bot Netlify!');
+});
 
-// Handler fungsi Netlify
-let initialized = false;
-
+// Tambahkan logging update masuk
 exports.handler = async (event, context) => {
-  if (!initialized) {
-    // Jalankan webhook Telegraf
-    bot.handleUpdate(JSON.parse(event.body));
-    initialized = true;
-  }
+  try {
+    console.log('🔔 Update Masuk:', event.body);
 
-  return {
-    statusCode: 200,
-    body: 'OK',
-  };
+    if (event.httpMethod === 'POST') {
+      const update = JSON.parse(event.body);
+      await bot.handleUpdate(update);
+    }
+
+    return {
+      statusCode: 200,
+      body: 'OK',
+    };
+  } catch (error) {
+    console.error('❌ ERROR:', error);
+    return {
+      statusCode: 500,
+      body: 'Internal Server Error',
+    };
+  }
 };
